@@ -1,0 +1,33 @@
+version: "3"
+services:
+  siteperso:
+    image: siteperso
+    container_name: siteperso
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - ./html:/usr/share/nginx/html
+    networks:
+      - proxy
+    # ports:
+    #   - "8080:8080"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.siteperso.entrypoints=http"
+      - "traefik.http.routers.siteperso.rule=Host(`matthias-bouloc.fr`)"
+      - "traefik.http.middlewares.siteperso-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.siteperso.middlewares=siteperso-https-redirect"
+      - "traefik.http.routers.siteperso-secure.entrypoints=https"
+      - "traefik.http.routers.siteperso-secure.rule=Host(`matthias-bouloc.fr`)"
+      - "traefik.http.routers.siteperso-secure.tls=true"
+      - "traefik.http.routers.siteperso-secure.service=siteperso"
+      - "traefik.http.services.siteperso.loadbalancer.server.port=8080"
+      - "traefik.docker.network=proxy"
+
+networks:
+  proxy:
+    external: true
